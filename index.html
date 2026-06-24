@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Learning Path Finder — Stockbridge Capital Group</title>
+  <style>
+    /* ── Brand Variables ─────────────────────────────────────────────── */
+    :root {
+      --aegean:      #2F4157;
+      --cerulean:    #33576F;
+      --steel:       #5591B5;
+      --sky:         #C7D9E5;
+      --cream:       #FDF6EE;
+      --emerald:     #498C6D;
+      --sage:        #BBCF9A;
+      --cinnabar:    #D95E3D;
+      --butter:      #F6D982;
+      --plum:        #8C4A82;
+      --white:       #FFFFFF;
+      --gray-dark:   #333333;
+      --gray-mid:    #888888;
+      --gray-light:  #E0E0E0;
+      --font-body:    'Century Gothic', 'Trebuchet MS', AppleGothic, Futura, sans-serif;
+      --font-display: Georgia, 'Times New Roman', serif;
+      --radius:       4px;
+      --shadow-sm:    0 1px 3px rgba(47,65,87,.10);
+      --shadow-md:    0 4px 14px rgba(47,65,87,.14);
+    }
+
+    /* ── Reset ───────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--cream);
+      color: var(--aegean);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Header ──────────────────────────────────────────────────────── */
+    .site-header {
+      background: var(--aegean);
+      height: 56px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 8px rgba(47,65,87,.25);
+    }
+    .wordmark {
+      font-family: var(--font-display);
+      font-size: 17px;
+      color: var(--white);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .header-sub {
+      font-size: 11px;
+      color: var(--sky);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    /* ── Hero ────────────────────────────────────────────────────────── */
+    .hero {
+      background: var(--cerulean);
+      padding: 28px 32px 22px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: 21px;
+      color: var(--white);
+      font-weight: 500;
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+    .hero-sub {
+      font-size: 12px;
+      color: var(--sky);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Filter Rail ─────────────────────────────────────────────────── */
+    .filter-rail {
+      background: var(--cream);
+      border-bottom: 1px solid var(--sky);
+      padding: 14px 32px 10px;
+      position: sticky;
+      top: 56px;
+      z-index: 100;
+    }
+    .filter-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .filter-row:last-of-type { margin-bottom: 0; }
+    .filter-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--gray-mid);
+      white-space: nowrap;
+      min-width: 96px;
+      padding-top: 5px;
+    }
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .pill {
+      font-family: var(--font-body);
+      font-size: 12px;
+      padding: 4px 13px;
+      border: 1px solid var(--sky);
+      border-radius: 20px;
+      background: var(--white);
+      color: var(--aegean);
+      cursor: pointer;
+      line-height: 1.5;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      user-select: none;
+    }
+    .pill:hover { border-color: var(--cerulean); color: var(--cerulean); }
+    .pill.active {
+      background: var(--cerulean);
+      color: var(--white);
+      border-color: var(--cerulean);
+    }
+    .filter-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .clear-btn {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--gray-mid);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 3px 6px;
+      text-decoration: underline;
+      letter-spacing: 0.02em;
+    }
+    .clear-btn:hover { color: var(--cerulean); }
+
+    /* ── Main ────────────────────────────────────────────────────────── */
+    .main {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 24px 32px 56px;
+    }
+    .result-meta {
+      margin-bottom: 18px;
+      min-height: 20px;
+    }
+    .result-count {
+      font-size: 12px;
+      color: var(--gray-mid);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Suggested Path Strip ────────────────────────────────────────── */
+    .path-strip {
+      background: var(--aegean);
+      border-radius: var(--radius);
+      padding: 20px 24px 22px;
+      margin-bottom: 24px;
+      display: none;
+    }
+    .path-header {
+      margin-bottom: 14px;
+    }
+    .path-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--white);
+      display: block;
+      margin-bottom: 2px;
+      letter-spacing: 0.01em;
+    }
+    .path-desc {
+      font-size: 11px;
+      color: var(--sky);
+      letter-spacing: 0.02em;
+    }
+    .path-steps {
+      display: flex;
+      align-items: stretch;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .path-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(255,255,255,.09);
+      border-radius: var(--radius);
+      padding: 10px 13px;
+      flex: 0 1 200px;
+      min-width: 160px;
+    }
+    .path-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--butter);
+      color: var(--aegean);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .path-step-title {
+      font-size: 12px;
+      color: var(--white);
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+    .path-step-meta {
+      font-size: 10px;
+      color: var(--sky);
+      line-height: 1.3;
+    }
+    .path-sep {
+      color: var(--butter);
+      font-size: 16px;
+      align-self: center;
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+
+    /* ── Card Grid ───────────────────────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+      gap: 16px;
+    }
+    .card-grid.anim {
+      animation: fadeUp .18s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(7px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card-grid.anim { animation: none; }
+    }
+
+    /* ── Card ────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--sky);
+      border-top: 4px solid var(--tool-color, var(--aegean));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .card-body {
+      padding: 15px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .card-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    .badge {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 2px 7px;
+      border-radius: 3px;
+      line-height: 1.6;
+    }
+    .badge-fmt            { background: var(--sky); color: var(--aegean); }
+    .badge-fmt.is-video   { background: var(--cinnabar); color: var(--white); }
+    .badge-fmt.is-repo    { background: var(--aegean); color: var(--white); }
+    .badge-tool           { background: transparent; border: 1px solid; }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--aegean);
+      line-height: 1.35;
+      margin-bottom: 3px;
+      font-weight: 500;
+    }
+    .card-provider {
+      font-size: 10px;
+      color: var(--gray-mid);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--gray-dark);
+      line-height: 1.55;
+      margin-bottom: 12px;
+      flex: 1;
+    }
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    .card-level   { font-weight: 600; }
+    .card-dur     { color: var(--gray-mid); }
+    .card-note {
+      font-size: 11px;
+      color: var(--cerulean);
+      font-style: italic;
+      margin-bottom: 12px;
+      padding: 5px 9px;
+      background: rgba(199,217,229,.35);
+      border-left: 3px solid var(--cerulean);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      line-height: 1.45;
+    }
+    .card-cta {
+      display: block;
+      background: var(--cerulean);
+      color: var(--white);
+      text-align: center;
+      padding: 9px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: auto;
+      transition: background .12s;
+      cursor: pointer;
+    }
+    .card-cta:hover { background: var(--aegean); }
+
+    /* ── Empty State ─────────────────────────────────────────────────── */
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 72px 32px;
+    }
+    .empty-state h3 {
+      font-family: var(--font-display);
+      font-size: 17px;
+      color: var(--aegean);
+      margin-bottom: 10px;
+    }
+    .empty-state p {
+      font-size: 13px;
+      color: var(--gray-mid);
+      max-width: 380px;
+      margin: 0 auto 24px;
+      line-height: 1.65;
+    }
+    .btn-clear-empty {
+      background: var(--cerulean);
+      color: var(--white);
+      border: none;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 24px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .btn-clear-empty:hover { background: var(--aegean); }
+
+    /* ── Footer ──────────────────────────────────────────────────────── */
+    .site-footer {
+      background: var(--aegean);
+      padding: 18px 32px;
+      text-align: center;
+    }
+    .site-footer p {
+      font-size: 11px;
+      color: var(--sky);
+      letter-spacing: 0.03em;
+    }
+    .site-footer a {
+      color: var(--butter);
+      text-decoration: underline;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────────── */
+    @media (max-width: 800px) {
+      .site-header { padding: 0 16px; }
+      .hero         { padding: 20px 16px; }
+      .hero h1      { font-size: 18px; }
+      .filter-rail  { padding: 12px 16px 8px; }
+      .filter-row   { flex-direction: column; gap: 5px; }
+      .filter-label { min-width: unset; padding-top: 0; }
+      .main         { padding: 16px 16px 40px; }
+      .path-steps   { flex-direction: column; }
+      .path-sep     { transform: rotate(90deg); align-self: flex-start; margin-left: 15px; }
+      .path-step    { flex: 1 1 100%; }
+      .card-grid    { grid-template-columns: 1fr 1fr; }
+      .site-footer  { padding: 16px; }
+    }
+    @media (max-width: 540px) {
+      .card-grid { grid-template-columns: 1fr; }
+      .pill { font-size: 11px; padding: 4px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────── -->
+<header class="site-header">
+  <span class="wordmark">Stockbridge</span>
+  <span class="header-sub">AI Resource Hub</span>
+</header>
+
+<!-- ── Hero ────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <h1>Find the right AI training for your role.</h1>
+  <p class="hero-sub">20+ verified free resources &nbsp;·&nbsp; Microsoft Copilot &nbsp;·&nbsp; ChatGPT &nbsp;·&nbsp; Claude</p>
+</section>
+
+<!-- ── Filter Rail ──────────────────────────────────────────────────── -->
+<div class="filter-rail">
+  <div class="filter-row">
+    <span class="filter-label">Experience</span>
+    <div class="filter-pills">
+      <button class="pill" data-filter="level" data-value="beginner">Beginner</button>
+      <button class="pill" data-filter="level" data-value="intermediate">Intermediate</button>
+      <button class="pill" data-filter="level" data-value="advanced">Advanced</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Your Role</span>
+    <div class="filter-pills">
+      <button class="pill" data-filter="role" data-value="investment">Investment &amp; Asset Mgmt</button>
+      <button class="pill" data-filter="role" data-value="finance-accounting">Finance &amp; Accounting</button>
+      <button class="pill" data-filter="role" data-value="client-wealth">Client &amp; Wealth Services</button>
+      <button class="pill" data-filter="role" data-value="ops-admin">Operations &amp; Admin</button>
+      <button class="pill" data-filter="role" data-value="strategy-compliance">Strategy &amp; Compliance</button>
+      <button class="pill" data-filter="role" data-value="people-comms">People &amp; HR</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Tool Focus</span>
+    <div class="filter-pills">
+      <button class="pill" data-filter="tool" data-value="copilot">Microsoft Copilot</button>
+      <button class="pill" data-filter="tool" data-value="chatgpt">ChatGPT</button>
+      <button class="pill" data-filter="tool" data-value="claude">Claude</button>
+      <button class="pill" data-filter="tool" data-value="all">All AI Tools</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Time Available</span>
+    <div class="filter-pills">
+      <button class="pill" data-filter="time" data-value="quick">Under 2 Hours</button>
+      <button class="pill" data-filter="time" data-value="half-day">Half Day (2–4 hrs)</button>
+      <button class="pill" data-filter="time" data-value="multi-day">Multi-Day</button>
+    </div>
+  </div>
+  <div class="filter-footer">
+    <button class="clear-btn" id="clear-btn">Clear filters</button>
+  </div>
+</div>
+
+<!-- ── Main Content ──────────────────────────────────────────────────── -->
+<main class="main">
+  <div class="result-meta">
+    <span class="result-count" id="result-count"></span>
+  </div>
+
+  <!-- Suggested Path (hidden until filters match a path group) -->
+  <section class="path-strip" id="path-strip"></section>
+
+  <!-- Card Grid -->
+  <div class="card-grid" id="card-grid"></div>
+
+  <!-- Empty State -->
+  <div class="empty-state" id="empty-state">
+    <h3>No resources match these filters.</h3>
+    <p>Try removing one filter — for example, broadening your time availability or selecting All AI Tools.</p>
+    <button class="btn-clear-empty" id="empty-clear-btn">Clear all filters</button>
+  </div>
+</main>
+
+<!-- ── Footer ────────────────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <p>Part of the <a href="#">Stockbridge AI Resource Hub</a> &nbsp;·&nbsp; Stockbridge Capital Group &nbsp;·&nbsp; All resources are free to access.</p>
+</footer>
+
+<script src="courses.js"></script>
+<script>
+  /* ── State ────────────────────────────────────────────────────────── */
+  var state = { level: null, role: null, tool: null, time: null };
+
+  var TOOL_LABELS = {
+    copilot: 'Microsoft Copilot',
+    chatgpt: 'ChatGPT / OpenAI',
+    claude:  'Claude / Anthropic',
+    all:     'All AI Tools'
+  };
+
+  var TOOL_COLORS = {
+    copilot: '#5591B5',  // --steel
+    chatgpt: '#498C6D',  // --emerald
+    claude:  '#8C4A82',  // --plum
+    all:     '#2F4157'   // --aegean
+  };
+
+  var FORMAT_LABELS = {
+    'course':        'Course',
+    'learning-path': 'Learning Path',
+    'video':         '▶ Video',
+    'github-repo':   'GitHub',
+    'guide':         'Guide'
+  };
+
+  var LEVEL_COLORS = {
+    beginner:     '#F6D982',  // --butter
+    intermediate: '#5591B5',  // --steel
+    advanced:     '#D95E3D'   // --cinnabar
+  };
+
+  /* ── Filter Logic ─────────────────────────────────────────────────── */
+  function getMatches() {
+    return window.COURSES.filter(function(c) {
+      var lvl  = !state.level || c.levels.includes(state.level);
+      var role = !state.role  || c.roles.includes('all') || c.roles.includes(state.role);
+      var tool = !state.tool  || c.tools.includes('all') || c.tools.includes(state.tool);
+      var time = !state.time  || c.time === state.time;
+      return lvl && role && tool && time;
+    });
+  }
+
+  function getSuggestedPath(courses) {
+    if (!state.role && !state.level) return null;
+
+    var withPath = courses.filter(function(c) { return c.pathPosition && c.pathGroup; });
+    if (!withPath.length) return null;
+
+    var groups = {};
+    withPath.forEach(function(c) {
+      if (!groups[c.pathGroup]) groups[c.pathGroup] = [];
+      groups[c.pathGroup].push(c);
+    });
+
+    var best = Object.values(groups).sort(function(a, b) { return b.length - a.length; })[0];
+    if (!best || best.length < 2) return null;
+
+    return best.slice().sort(function(a, b) { return a.pathPosition - b.pathPosition; }).slice(0, 4);
+  }
+
+  /* ── Render: Suggested Path ───────────────────────────────────────── */
+  function renderPath(path) {
+    var strip = document.getElementById('path-strip');
+    if (!path) { strip.style.display = 'none'; return; }
+
+    var stepsHtml = path.map(function(c, i) {
+      return (
+        '<div class="path-step">' +
+          '<div class="path-num">' + c.pathPosition + '</div>' +
+          '<div>' +
+            '<div class="path-step-title">' + esc(c.title) + '</div>' +
+            '<div class="path-step-meta">' + esc(c.provider) + ' &nbsp;·&nbsp; ' + esc(c.duration) + '</div>' +
+          '</div>' +
+        '</div>' +
+        (i < path.length - 1 ? '<div class="path-sep">→</div>' : '')
+      );
+    }).join('');
+
+    strip.innerHTML =
+      '<div class="path-header">' +
+        '<span class="path-title">Suggested Learning Path</span>' +
+        '<span class="path-desc"> &mdash; A recommended sequence based on your selection</span>' +
+      '</div>' +
+      '<div class="path-steps">' + stepsHtml + '</div>';
+
+    strip.style.display = 'block';
+  }
+
+  /* ── Render: Cards ────────────────────────────────────────────────── */
+  function renderCards(courses) {
+    var grid  = document.getElementById('card-grid');
+    var empty = document.getElementById('empty-state');
+    var count = document.getElementById('result-count');
+    var hasFilters = state.level || state.role || state.tool || state.time;
+
+    count.textContent = hasFilters
+      ? 'Showing ' + courses.length + ' resource' + (courses.length !== 1 ? 's' : '') + ' · Matching your filters'
+      : window.COURSES.length + ' resources available — use filters above to narrow your results';
+
+    if (!courses.length) {
+      grid.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    grid.style.display = 'grid';
+    empty.style.display = 'none';
+
+    grid.innerHTML = courses.map(function(c) {
+      var primaryTool = c.tools.includes('copilot') ? 'copilot'
+                      : c.tools.includes('chatgpt') ? 'chatgpt'
+                      : c.tools.includes('claude')  ? 'claude'
+                      : 'all';
+      var toolColor  = TOOL_COLORS[primaryTool];
+      var fmtLabel   = FORMAT_LABELS[c.format] || c.format;
+      var fmtClass   = c.format === 'video' ? ' is-video' : c.format === 'github-repo' ? ' is-repo' : '';
+      var toolDisplay = (c.tools.length === 1 && c.tools[0] === 'all')
+        ? 'All AI Tools'
+        : c.tools.filter(function(t) { return t !== 'all'; }).map(function(t) { return TOOL_LABELS[t] || t; }).join(' · ');
+      var levelLabel = c.levels.map(function(l) { return l.charAt(0).toUpperCase() + l.slice(1); }).join(' / ');
+      var levelColor = LEVEL_COLORS[c.levels[0]] || '#888';
+      var noteHtml   = c.licenseNote
+        ? '<p class="card-note">' + esc(c.licenseNote) + '</p>'
+        : '';
+
+      return (
+        '<div class="card" style="--tool-color:' + toolColor + '">' +
+          '<div class="card-body">' +
+            '<div class="card-badges">' +
+              '<span class="badge badge-fmt' + fmtClass + '">' + esc(fmtLabel) + '</span>' +
+              '<span class="badge badge-tool" style="border-color:' + toolColor + ';color:' + toolColor + '">' + esc(toolDisplay) + '</span>' +
+            '</div>' +
+            '<h3 class="card-title">' + esc(c.title) + '</h3>' +
+            '<p class="card-provider">' + esc(c.provider) + '</p>' +
+            '<p class="card-desc">' + esc(c.description) + '</p>' +
+            '<div class="card-meta">' +
+              '<span class="card-level" style="color:' + levelColor + '">● ' + levelLabel + '</span>' +
+              '<span class="card-dur">⏱ ' + esc(c.duration) + '</span>' +
+            '</div>' +
+            noteHtml +
+            '<a class="card-cta" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer">Open Resource →</a>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    /* Trigger fade-up animation */
+    grid.classList.remove('anim');
+    void grid.offsetWidth;
+    grid.classList.add('anim');
+  }
+
+  /* ── Render: Full ─────────────────────────────────────────────────── */
+  function render() {
+    var courses = getMatches();
+    renderPath(getSuggestedPath(courses));
+    renderCards(courses);
+  }
+
+  /* ── Escape HTML helper ───────────────────────────────────────────── */
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ── Filter interactions ──────────────────────────────────────────── */
+  document.querySelectorAll('.pill').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      var filter = pill.dataset.filter;
+      var value  = pill.dataset.value;
+      if (state[filter] === value) {
+        state[filter] = null;
+        pill.classList.remove('active');
+      } else {
+        document.querySelectorAll('.pill[data-filter="' + filter + '"]').forEach(function(p) {
+          p.classList.remove('active');
+        });
+        state[filter] = value;
+        pill.classList.add('active');
+      }
+      render();
+    });
+  });
+
+  function clearAll() {
+    Object.keys(state).forEach(function(k) { state[k] = null; });
+    document.querySelectorAll('.pill.active').forEach(function(p) { p.classList.remove('active'); });
+    render();
+  }
+
+  document.getElementById('clear-btn').addEventListener('click', clearAll);
+  document.getElementById('empty-clear-btn').addEventListener('click', clearAll);
+
+  /* ── Initial render ───────────────────────────────────────────────── */
+  render();
+</script>
+</body>
+</html>
