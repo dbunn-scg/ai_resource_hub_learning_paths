@@ -303,6 +303,7 @@
     .badge-fmt.is-video   { background: var(--cinnabar); color: var(--white); }
     .badge-fmt.is-repo    { background: var(--aegean); color: var(--white); }
     .badge-tool           { background: transparent; border: 1px solid; }
+    .badge-paid           { background: var(--butter); color: var(--aegean); }
     .card-title {
       font-family: var(--font-display);
       font-size: 14px;
@@ -441,7 +442,7 @@
 <!-- ── Hero ────────────────────────────────────────────────────────── -->
 <section class="hero">
   <h1>Find the right AI training for your role.</h1>
-  <p class="hero-sub">20+ verified free resources &nbsp;·&nbsp; Microsoft Copilot &nbsp;·&nbsp; ChatGPT &nbsp;·&nbsp; Claude</p>
+  <p class="hero-sub">20+ free resources &nbsp;·&nbsp; Microsoft Copilot &nbsp;·&nbsp; ChatGPT &nbsp;·&nbsp; Claude &nbsp;·&nbsp; CRE-specialist courses</p>
 </section>
 
 <!-- ── Filter Rail ──────────────────────────────────────────────────── -->
@@ -509,7 +510,7 @@
 
 <!-- ── Footer ────────────────────────────────────────────────────────── -->
 <footer class="site-footer">
-  <p>Part of the <a href="#">Stockbridge AI Resource Hub</a> &nbsp;·&nbsp; Stockbridge Capital Group &nbsp;·&nbsp; All resources are free to access.</p>
+  <p>Part of the <a href="#">Stockbridge AI Resource Hub</a> &nbsp;·&nbsp; Stockbridge Capital Group &nbsp;·&nbsp; Most resources are free · paid courses are labelled.</p>
 </footer>
 
 <script src="courses.js"></script>
@@ -637,6 +638,7 @@
       var noteHtml   = c.licenseNote
         ? '<p class="card-note">' + esc(c.licenseNote) + '</p>'
         : '';
+      var paidBadge  = !c.free ? '<span class="badge badge-paid">Paid</span>' : '';
 
       return (
         '<div class="card" style="--tool-color:' + toolColor + '">' +
@@ -644,6 +646,7 @@
             '<div class="card-badges">' +
               '<span class="badge badge-fmt' + fmtClass + '">' + esc(fmtLabel) + '</span>' +
               '<span class="badge badge-tool" style="border-color:' + toolColor + ';color:' + toolColor + '">' + esc(toolDisplay) + '</span>' +
+              paidBadge +
             '</div>' +
             '<h3 class="card-title">' + esc(c.title) + '</h3>' +
             '<p class="card-provider">' + esc(c.provider) + '</p>' +
